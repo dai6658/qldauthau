@@ -1,0 +1,15 @@
+Options -Indexes
+DirectoryIndex index.php
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # Chặn truy cập trực tiếp các thư mục nội bộ
+    RewriteRule ^(app|config|database|storage|cron|docs)(/|$) - [F,L]
+    # Bật dòng dưới để bắt buộc HTTPS (mã hóa khi truyền tải)
+    # RewriteCond %{HTTPS} off
+    # RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+<FilesMatch "\.(sql|lock|md|log)$">
+    Require all denied
+</FilesMatch>
