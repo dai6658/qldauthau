@@ -24,7 +24,7 @@ Tài liệu được **mã hóa khi lưu trữ** (AES-256-GCM), hỗ trợ khóa
 | `kiemsoat` | Kiểm soát nội bộ – nhật ký kiểm toán, báo cáo |
 | `ncc1`, `ncc2`, `ncc3` | Nhà cung cấp – cổng thông tin nhà cung cấp |
 
-Chi tiết: [docs/HUONG_DAN_CAI_DAT.md](docs/HUONG_DAN_CAI_DAT.md) · Kiểm thử: [docs/HUONG_DAN_KIEM_THU.md](docs/HUONG_DAN_KIEM_THU.md) · Báo cáo: [docs/BAO_CAO.md](docs/BAO_CAO.md) · Kịch bản demo: [docs/KICH_BAN_DEMO.md](docs/KICH_BAN_DEMO.md)
+Chi tiết: [docs/HUONG_DAN_CAI_DAT.md](docs/HUONG_DAN_CAI_DAT.md) · Kiểm thử: [docs/HUONG_DAN_KIEM_THU.md](docs/HUONG_DAN_KIEM_THU.md) · Kịch bản demo: [docs/KICH_BAN_DEMO.md](docs/KICH_BAN_DEMO.md)
 
 ## Cấu trúc thư mục
 
