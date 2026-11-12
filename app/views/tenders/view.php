@@ -1,7 +1,7 @@
 <?php
 $steps = ['draft' => 'Lập HSMT', 'pending_approval' => 'Trình duyệt', 'approved' => 'Đã duyệt', 'published' => 'Mời thầu', 'closed' => 'Đóng thầu', 'evaluating' => 'Đánh giá', 'awarded' => 'Trao thầu'];
 $keys = array_keys($steps);
-$curIdx = array_search($t['status'], $keys, true);
+$curIdx = $t['status'] === 'awarded' ? count($keys) : array_search($t['status'], $keys, true);
 $critTotal = array_sum(array_column($criteria, 'max_score'));
 $itemsTotal = array_sum(array_map(fn($i) => $i['quantity'] * $i['estimated_price'], $items));
 $isDraft = $t['status'] === 'draft';
