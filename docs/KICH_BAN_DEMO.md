@@ -22,6 +22,7 @@ Kịch bản đi trọn một vòng đời: **lập HSMT → phê duyệt → c�
    1. Xóa tệp `config/installed.lock`.
    2. Xóa các thư mục con trong `storage/documents/`.
    3. Mở `http://localhost/qldauthau/install.php` → tích "Tạo tài liệu mẫu" → **Cài đặt**.
+   4. Các con số trong kịch bản tính theo dữ liệu mẫu của bản cài mới nhất (bản vá 16/11/2026). Nếu chỉ chạy file nâng cấp `migrate_2026_11_thanh_toan.sql` mà không cài lại, hóa đơn 0002156 vẫn là 1.732.500.000 thay vì 1.575.000.000 (Cảnh 10, 12).
 3. Bật extension `zip` trong `php.ini` để tìm được theo nội dung tệp Word (xem `HUONG_DAN_CAI_DAT.md`).
 4. Chuẩn bị 2 tệp trên Desktop:
    - `ban-ve.pdf`: một tệp PDF bất kỳ.
@@ -38,7 +39,7 @@ Kịch bản đi trọn một vòng đời: **lập HSMT → phê duyệt → c�
 - Mật khẩu mọi tài khoản: `123456`.
 - **Đổi tài khoản ở cửa sổ A**: bấm tên người dùng (góc trên phải) → **Đăng xuất** → đăng nhập tài khoản mới.
 - Đăng nhập sẵn trước khi bắt đầu: A = `admin`, B = `ncc1`, C = `giamdoc`.
-- Mở sẵn: một tab **phpMyAdmin** (`http://localhost/phpmyadmin`) và cửa sổ thư mục `C:\xampp\htdocs\qldauthau\storage\documents`.
+- Mở sẵn: một tab **phpMyAdmin** (`http://localhost/phpmyadmin`) và cửa sổ thư mục `storage\documents` trong thư mục cài đặt (ví dụ `D:\xampp\htdocs\qldauthau\storage\documents`).
 
 ### A3. Dữ liệu mẫu có sẵn sau khi cài
 
@@ -70,7 +71,7 @@ Kịch bản đi trọn một vòng đời: **lập HSMT → phê duyệt → c�
 4. Menu **Cơ cấu tổ chức**.
    - **Người xem cần thấy:** công ty → 5 phòng ban.
 
-*Lời dẫn: "Phân quyền có 2 lớp. Vai trò quyết định được làm gì; thuộc tính công ty – phòng ban – mã dự án quyết định được thấy hồ sơ nào. Tổ chức tự thêm vai trò, chỉnh quyền mà không cần sửa code."*
+*Lời dẫn: "Phân quyền có 2 lớp. Vai trò quyết định được làm gì; các thuộc tính phòng ban phụ trách dự án, người lập, thành viên được giao trên từng hồ sơ thầu và mức mật của tài liệu quyết định được thấy hồ sơ nào. Tổ chức tự thêm vai trò, chỉnh quyền mà không cần sửa code."*
 
 ---
 
@@ -94,7 +95,7 @@ Kịch bản đi trọn một vòng đời: **lập HSMT → phê duyệt → c�
      - công thức "Điểm tổng hợp = 60% × điểm kỹ thuật + 40% × điểm giá".
 6. Lướt tab **Hạng mục** (tổng dự toán 5,9 tỷ) và tab **Tiêu chí** (tổng 100 điểm).
 7. Tab **Phân quyền & mời thầu**:
-   - Khối trái: chọn **Hoàng Minh Tuấn (Chuyên viên đấu thầu)**, quyền **Tổ chuyên gia (chấm điểm)** → **Thêm**.
+   - Khối trái: đã có **Trần Thị Lan** (quyền Biên soạn). Chọn **Đặng Thu Trang (Chuyên viên đấu thầu)**, quyền **Tổ chuyên gia (chấm điểm)** → **Thêm**. *(Hoàng Minh Tuấn là người lập GT-2026-0003 nên đã có quyền chấm, không cần thêm.)*
    - Khối phải: đã mời "Hòa Bình Xanh", vì đây là hình thức đấu thầu hạn chế.
 8. Tab **Tài liệu**, dòng tải lên phía dưới:
    - Loại **Bản vẽ kỹ thuật**, mức mật **Công khai**.
@@ -102,7 +103,7 @@ Kịch bản đi trọn một vòng đời: **lập HSMT → phê duyệt → c�
 9. Bấm **Trình duyệt** → xác nhận.
 
 **Người xem cần thấy:**
-- Thông báo "Đã trình phê duyệt HSMT"; trạng thái **Chờ duyệt**; thanh tiến trình sáng bước 2.
+- Thông báo "Đã trình phê duyệt HSMT"; nhãn trạng thái **Chờ phê duyệt**; thanh tiến trình sáng bước 2 "Trình duyệt".
 - Nút **Sửa** biến mất: hồ sơ bị khóa khi đang duyệt.
 
 *Lời dẫn: "Mỗi hồ sơ thầu có danh sách phân quyền riêng — người biên soạn, tổ chuyên gia, người chỉ xem — bên cạnh quyền theo phòng ban."*
@@ -147,7 +148,7 @@ Kịch bản đi trọn một vòng đời: **lập HSMT → phê duyệt → c�
 ### Cảnh 5. Công bố HSMT — 1 phút
 **Cửa sổ A — `dauthau`**
 
-1. Mở **GT-2026-0003** (trạng thái **Đã duyệt**) → bấm **Công bố** → xác nhận.
+1. Mở **GT-2026-0003** (nhãn **Đã phê duyệt**) → bấm **Công bố** → xác nhận.
    - **Người xem cần thấy:** "Đã công bố HSMT và gửi thông báo tới 1 tài khoản nhà thầu". Tab **Tài liệu** có thêm **"HSMT GT-2026-0003 (bản công bố)"** mức *Công khai*, do hệ thống tự tạo.
 2. Bấm **In / PDF** (mở tab mới): bản in theo thể thức văn bản hành chính, có quốc hiệu, phụ lục hạng mục và tiêu chí. Đóng tab.
 
@@ -264,7 +265,7 @@ Kịch bản đi trọn một vòng đời: **lập HSMT → phê duyệt → c�
    - **Người xem cần thấy:** chuyển sang trang **Đánh giá HSDT – GT-2026-0002** với thông báo "Đã mở thầu 2 HSDT và lập biên bản mở thầu". *(Có thể mở nhanh tab Tài liệu của HSMT để thấy **Biên bản mở thầu** tự lập.)*
 3. Tab **1. Tính hợp lệ**: bấm ✓ ở cả 2 dòng. Bấm vào tệp đính kèm của Sao Việt để chứng minh đã giải niêm phong.
 4. Tab **2. Chấm điểm kỹ thuật**. Kéo xuống bảng **Tổ chuyên gia**.
-   - **Người xem cần thấy:** 3 thành viên — Trần Thị Lan, Hoàng Minh Tuấn (Phòng Kỹ thuật), Đặng Thu Trang (Phòng Tài chính – Kế toán) — đều "Chưa chấm"; mỗi người cần chấm **8 điểm thành phần** (4 tiêu chí × 2 HSDT).
+   - **Người xem cần thấy:** 3 thành viên — Trần Thị Lan (người lập HSMT), Hoàng Minh Tuấn (Phòng Kỹ thuật), Đặng Thu Trang (Phòng Tài chính – Kế toán) — đều "Chưa chấm"; mỗi người cần chấm **8 điểm thành phần** (4 tiêu chí × 2 HSDT).
 5. Nhập điểm theo bảng dưới → **Lưu phiếu chấm**. **Cả 3 chuyên gia nhập cùng bảng điểm này.**
 
 | Tiêu chí (điểm tối đa) | Sao Việt | Minh Phát |
@@ -470,7 +471,7 @@ Kịch bản đi trọn một vòng đời: **lập HSMT → phê duyệt → c�
 
 9. *(Tùy chọn)* Tab Quyết toán → **Tạo đợt thanh toán quyết toán (630.000.000 đ)**. Nút này chỉ hiện với tài khoản có quyền quản lý thanh toán (`ketoan`, `admin`), **không** hiện với `giamdoc`.
    - Tab Thanh toán có đợt mới "Thanh toán quyết toán" 630.000.000 đ, hạn sau 15 ngày, trạng thái **Kế hoạch**.
-   - Bấm lại nút lần nữa: nút đã biến mất (hệ thống không tạo trùng đợt quyết toán).
+   - Nút **Tạo đợt thanh toán quyết toán** biến mất ngay sau khi bấm, nên không tạo trùng đợt.
    - Muốn chi tiếp thì làm như Cảnh 10, cần hóa đơn hợp lệ có tổng (tiền hàng + VAT) ≥ 630.000.000 đ, ví dụ tiền hàng 572.727.273 + VAT 57.272.727 (không cần trong demo).
 
 **Cửa sổ B — `ncc1`** (F5) *(tùy chọn)*
