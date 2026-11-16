@@ -252,7 +252,7 @@ class PortalController extends Controller
         $acceptances = [];
         $docs = [];
         foreach ($contracts as $c) {
-            $payments[$c['id']] = rows('SELECT milestone, amount, due_date, status, paid_amount, paid_at FROM payments WHERE contract_id = ? ORDER BY due_date IS NULL, due_date', [$c['id']]);
+            $payments[$c['id']] = rows("SELECT milestone, amount, due_date, status, paid_amount, paid_at FROM payments WHERE contract_id = ? AND status <> 'cancelled' ORDER BY due_date IS NULL, due_date", [$c['id']]);
             $acceptances[$c['id']] = rows('SELECT title, accept_date, result, note FROM acceptances WHERE contract_id = ? ORDER BY accept_date', [$c['id']]);
             $docs[$c['id']] = DocumentService::forEntity('contract', (int) $c['id']);
         }
@@ -304,9 +304,17 @@ class PortalController extends Controller
             if (val('SELECT 1 FROM invoices WHERE supplier_id = ? AND invoice_no = ?', [$this->sid, $no])) {
                 $this->fail('Số hóa đơn đã được gửi trước đó.');
             }
-            $invoiced = (float) val("SELECT COALESCE(SUM(amount),0) FROM invoices WHERE contract_id = ? AND status <> 'rejected'", [$c['id']]);
-            if ($invoiced + $amount > (float) $c['value'] * 1.0001) {
-                $this->fail('Tổng giá trị hóa đơn (trước thuế) vượt giá trị hợp đồng.');
+            if ($vat < 0) {
+                $this->fail('Thuế GTGT không hợp lệ.');
+            }
+            // Giá hợp đồng là giá đã bao gồm thuế: tổng hóa đơn (tiền hàng + VAT) không vượt giá trị hợp đồng,
+            // hoặc giá trị quyết toán nếu hợp đồng đã quyết toán.
+            $settled = $c['status'] === 'completed' && $c['settled_amount'] !== null;
+            $cap = $settled ? (float) $c['settled_amount'] : (float) $c['value'];
+            $invoiced = (float) val("SELECT COALESCE(SUM(amount + vat_amount),0) FROM invoices WHERE contract_id = ? AND status <> 'rejected'", [$c['id']]);
+            if ($invoiced + $amount + $vat > $cap) {
+                $this->fail('Tổng giá trị hóa đơn gồm thuế (' . money($invoiced + $amount + $vat) . ') vượt '
+                    . ($settled ? 'giá trị quyết toán' : 'giá trị hợp đồng') . ' (' . money($cap) . '). Còn được xuất tối đa ' . money(max(0, $cap - $invoiced)) . '.');
             }
             $files = DocumentService::files('file');
             if (!$files) {
