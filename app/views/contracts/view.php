@@ -137,7 +137,7 @@ $paidPct = $c['value'] > 0 ? round($stats['paid'] * 100 / $c['value'], 1) : 0;
     <div class="table-responsive"><table class="table align-middle mb-0">
         <thead><tr><th>Đợt</th><th class="text-end">Số tiền</th><th>Hạn</th><th>Hóa đơn / Nghiệm thu</th><th>Trạng thái</th><th class="text-end">Đã chi</th><?php if ($canP): ?><th style="width:360px">Thao tác</th><?php endif; ?></tr></thead>
         <?php foreach ($payments as $p): $d = days_left($p['due_date']); ?>
-            <tr>
+            <tr class="<?= $p['status'] === 'cancelled' ? 'text-muted text-decoration-line-through' : '' ?>">
                 <td><strong><?= e($p['milestone']) ?></strong><div class="small text-muted"><?= e($p['note']) ?></div></td>
                 <td class="text-end"><?= money($p['amount']) ?></td>
                 <td class="small"><?= fdate($p['due_date']) ?><?php if ($p['status'] !== 'paid' && $d !== null && $d <= 7): ?><br><span class="badge bg-<?= $d < 0 ? 'danger' : 'warning text-dark' ?>"><?= $d < 0 ? 'Quá hạn' : 'Sắp đến hạn' ?></span><?php endif; ?></td>
@@ -165,7 +165,7 @@ $paidPct = $c['value'] > 0 ? round($stats['paid'] * 100 / $c['value'], 1) : 0;
                 </td><?php endif; ?>
             </tr>
         <?php endforeach; ?>
-        <tr class="table-light fw-bold"><td>Tổng</td><td class="text-end"><?= money($stats['planned']) ?></td><td colspan="3"></td><td class="text-end"><?= money($stats['paid']) ?></td><?php if ($canP): ?><td></td><?php endif; ?></tr>
+        <tr class="table-light fw-bold"><td>Tổng <span class="small fw-normal text-muted">(không tính đợt đã hủy)</span></td><td class="text-end"><?= money($stats['planned']) ?></td><td colspan="3"></td><td class="text-end"><?= money($stats['paid']) ?></td><?php if ($canP): ?><td></td><?php endif; ?></tr>
     </table></div>
     <?php if ($canP && in_array($c['status'], ['draft', 'pending_approval', 'active'], true)): ?>
     <form method="post" action="<?= url('contracts/addPayment') ?>" class="card-body border-top row g-2">
@@ -208,8 +208,8 @@ $paidPct = $c['value'] > 0 ? round($stats['paid'] * 100 / $c['value'], 1) : 0;
             </div>
             <button class="btn btn-success mt-2"><i class="bi bi-check2-square"></i> Quyết toán hợp đồng</button>
         </form>
-        <?php elseif ($canP && $c['status'] === 'completed' && $c['settled_amount'] - $stats['paid'] > 0): ?>
-            <form method="post" action="<?= url('contracts/finalPayment', ['id' => $c['id']]) ?>"><?= csrf_field() ?><button class="btn btn-primary">Tạo đợt thanh toán quyết toán (<?= money($c['settled_amount'] - $stats['paid']) ?>)</button></form>
+        <?php elseif ($canP && $c['status'] === 'completed' && $c['settled_amount'] - $stats['paid'] - $stats['open'] > 0): ?>
+            <form method="post" action="<?= url('contracts/finalPayment', ['id' => $c['id']]) ?>"><?= csrf_field() ?><button class="btn btn-primary">Tạo đợt thanh toán quyết toán (<?= money($c['settled_amount'] - $stats['paid'] - $stats['open']) ?>)</button></form>
         <?php endif; ?>
     </div></div>
     <div class="col-lg-6"><div class="card card-body">
