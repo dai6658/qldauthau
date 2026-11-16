@@ -140,7 +140,7 @@ $paidPct = $c['value'] > 0 ? round($stats['paid'] * 100 / $c['value'], 1) : 0;
             <tr class="<?= $p['status'] === 'cancelled' ? 'text-muted text-decoration-line-through' : '' ?>">
                 <td><strong><?= e($p['milestone']) ?></strong><div class="small text-muted"><?= e($p['note']) ?></div></td>
                 <td class="text-end"><?= money($p['amount']) ?></td>
-                <td class="small"><?= fdate($p['due_date']) ?><?php if ($p['status'] !== 'paid' && $d !== null && $d <= 7): ?><br><span class="badge bg-<?= $d < 0 ? 'danger' : 'warning text-dark' ?>"><?= $d < 0 ? 'Quá hạn' : 'Sắp đến hạn' ?></span><?php endif; ?></td>
+                <td class="small"><?= fdate($p['due_date']) ?><?php if (!in_array($p['status'], ['paid', 'cancelled'], true) && $d !== null && $d <= 7): ?><br><span class="badge bg-<?= $d < 0 ? 'danger' : 'warning text-dark' ?>"><?= $d < 0 ? 'Quá hạn' : 'Sắp đến hạn' ?></span><?php endif; ?></td>
                 <td class="small"><?= $p['invoice_no'] ? 'HĐơn ' . e($p['invoice_no']) : '' ?><?= $p['acceptance_title'] ? '<br>NT: ' . e($p['acceptance_title']) : '' ?></td>
                 <td><?= badge('payment_status', $p['status']) ?></td>
                 <td class="text-end"><?= $p['status'] === 'paid' ? money($p['paid_amount']) . '<br><small>' . fdate($p['paid_at']) . '</small>' : '' ?></td>
@@ -193,6 +193,9 @@ $paidPct = $c['value'] > 0 ? round($stats['paid'] * 100 / $c['value'], 1) : 0;
             <tr><td>Giá trị hóa đơn đã nhận (trừ bị từ chối)</td><td class="text-end"><?= money($stats['invoiced']) ?></td></tr>
             <tr><td>Số lần nghiệm thu đạt</td><td class="text-end"><?= count(array_filter($acceptances, fn($a) => $a['result'] !== 'failed')) ?>/<?= count($acceptances) ?></td></tr>
             <tr><td>Đã giải ngân</td><td class="text-end"><?= money($stats['paid']) ?></td></tr>
+            <?php if ($stats['paid'] > $stats['invoiced']): ?>
+                <tr class="table-warning"><td>Đã chi nhưng chưa có hóa đơn <div class="small text-muted">Thường là khoản tạm ứng; nhà thầu cần xuất hóa đơn khi giao hàng, nghiệm thu</div></td><td class="text-end fw-semibold"><?= money($stats['paid'] - $stats['invoiced']) ?></td></tr>
+            <?php endif; ?>
             <?php if ($c['settled_amount'] !== null): ?>
                 <tr class="table-success"><td><strong>Giá trị quyết toán</strong> (<?= fdatetime($c['settled_at']) ?>)</td><td class="text-end fw-bold"><?= money($c['settled_amount']) ?></td></tr>
                 <tr><td>Còn phải thanh toán</td><td class="text-end fw-bold"><?= money($c['settled_amount'] - $stats['paid']) ?></td></tr>
