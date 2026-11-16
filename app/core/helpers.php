@@ -504,7 +504,7 @@ function labels(string $group): array
         'payment_status' => [
             'planned' => ['Kế hoạch', 'secondary'], 'pending_approval' => ['Chờ duyệt chi', 'warning'],
             'approved' => ['Đã duyệt chi', 'info'], 'paid' => ['Đã giải ngân', 'success'],
-            'rejected' => ['Bị từ chối', 'danger'],
+            'rejected' => ['Bị từ chối', 'danger'], 'cancelled' => ['Đã hủy', 'secondary'],
         ],
         'po_status' => [
             'sent' => ['Đã gửi NCC', 'warning'], 'confirmed' => ['NCC đã xác nhận', 'info'],
