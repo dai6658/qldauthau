@@ -58,7 +58,7 @@ Kịch bản đi trọn một vòng đời: **lập HSMT → phê duyệt → c�
 **Cửa sổ A — `admin`**
 
 1. Đăng xuất để hiện trang đăng nhập.
-   - Chỉ bảng **tài khoản demo** và liên kết **Đăng ký tài khoản** dành cho nhà cung cấp.
+   - Chỉ liên kết **Đăng ký tài khoản** dành cho nhà cung cấp, và bảng **tài khoản demo** nếu bạn còn giữ nó trong `app/views/auth/login.php`. Nếu đã xóa bảng này thì giới thiệu danh sách tài khoản bằng slide.
    - Đăng nhập lại `admin`.
 2. Menu **Bảng điều khiển**. Lướt từ trên xuống:
    - Hàng KPI: gói thầu đang mở, giá trị trúng thầu, tiết kiệm, tỷ lệ thành công, TMĐT / đã chi.
@@ -190,6 +190,67 @@ Kịch bản đi trọn một vòng đời: **lập HSMT → phê duyệt → c�
 
 ---
 
+### Cảnh 6B. Nhà cung cấp mới tự đăng ký & được thẩm định — 4 phút *(tùy chọn)*
+
+**Điều kiện:** chạy **sau Cảnh 6 và trước Cảnh 7**, khi GT-2026-0002 còn đang mời thầu. Cảnh này cho thấy: nhà cung cấp chưa được duyệt thì không nộp được HSDT; duyệt xong mới nộp được.
+
+**Cửa sổ B — đăng xuất `ncc1`**
+
+1. Trang đăng nhập → dòng "Là nhà cung cấp?" → bấm **Đăng ký tài khoản**.
+2. *(Tùy chọn — chứng minh kiểm tra dữ liệu)*: điền đủ các ô bắt buộc nhưng **Mã số thuế** là `0101234567` (MST của Sao Việt) → **Gửi đăng ký**.
+   - **Người xem cần thấy:** "Mã số thuế đã được đăng ký." Gõ `12345` thì báo "Mã số thuế không hợp lệ (10 hoặc 13 số)."
+3. Điền form đăng ký:
+
+| Ô | Giá trị nhập |
+|---|---|
+| Tên doanh nghiệp * | Công ty TNHH Thiết bị Mạng Phương Nam |
+| Mã số thuế * | 0109998887 |
+| Địa chỉ | 45 Nguyễn Trãi, Thanh Xuân, Hà Nội |
+| Người đại diện | Lê Thị Mai |
+| Email * | mai.lt@phuongnam.vn |
+| Điện thoại | 0987654321 |
+| Lĩnh vực kinh doanh | Cung cấp thiết bị mạng, an ninh mạng |
+| Tên đăng nhập * | phuongnam |
+| Mật khẩu * / Nhập lại * | Pn@12345 |
+
+   - Bấm **Gửi đăng ký**.
+   - **Người xem cần thấy:** quay về trang đăng nhập với hộp xanh "Đăng ký thành công! Hồ sơ đang chờ bên mời thầu thẩm định…"
+4. Đăng nhập `phuongnam` / `Pn@12345` → **Tổng quan**.
+   - **Người xem cần thấy:** hộp vàng "Hồ sơ doanh nghiệp đang ở trạng thái **Chờ duyệt**… bạn chỉ có thể nộp HSDT khi hồ sơ đã được duyệt".
+5. Menu **Gói thầu đang mời** → GT-2026-0002 → **Tham dự**.
+   - **Người xem cần thấy:** vẫn xem và tải được HSMT, nhưng hộp vàng "Hồ sơ doanh nghiệp chưa được duyệt nên chưa thể nộp HSDT"; các ô đơn giá bị khóa, không có nút **Nộp HSDT**.
+6. Menu **Hồ sơ doanh nghiệp** — bổ sung hồ sơ năng lực:
+   1. Tab **Thông tin chung**: ô Mã số thuế bị khóa (không sửa được). Nhập **Năm thành lập** `2015`, **Vốn điều lệ** `20000000000`, **Doanh thu bình quân năm** `50000000000`, **Số lao động** `45` → **Cập nhật hồ sơ**.
+   2. Tab **Năng lực, kinh nghiệm**: loại **Kinh nghiệm / HĐ tương tự**, nội dung "Cung cấp thiết bị mạng cho Bệnh viện X", giá trị `1200000000`, năm `2025` → **Thêm**.
+   3. Tab **Tài liệu pháp lý & chứng chỉ**: tên "Giấy chứng nhận ĐKKD", loại **Hồ sơ pháp lý**, chọn `ban-ve.pdf` → **Tải lên**.
+
+*Lời dẫn: "Nhà cung cấp tự đăng ký và tự cập nhật hồ sơ năng lực, bên mời thầu không phải nhập tay. Mã số thuế là khóa định danh nên bị khóa sau khi đăng ký."*
+
+**Cửa sổ A — `dauthau`** (F5)
+
+7. Bấm **chuông**: có "**Nhà cung cấp mới đăng ký** — Công ty TNHH Thiết bị Mạng Phương Nam (MST 0109998887) đang chờ duyệt" và "NCC cập nhật hồ sơ chờ thẩm định". Bấm thông báo đầu tiên.
+   - *(Cách khác: menu **Nhà cung cấp** → lọc trạng thái **Chờ duyệt** → **Lọc**.)*
+8. Trang hồ sơ **NCC-0005 — Công ty TNHH Thiết bị Mạng Phương Nam**, nhãn vàng **Chờ duyệt**:
+   - Tab **Thông tin**: vốn điều lệ, doanh thu, số lao động vừa nhập; khối "Tài khoản cổng NCC" có `phuongnam`.
+   - Tab **Năng lực (1)** và tab **Tài liệu (1)**: bấm tải thử Giấy chứng nhận ĐKKD.
+9. *(Tùy chọn — yêu cầu bổ sung)*: bấm **Thẩm định / đổi trạng thái** → trạng thái **Tạm ngưng**, ghi chú "Bổ sung báo cáo tài chính 2 năm gần nhất" → **Cập nhật**. Nhà cung cấp nhận thông báo màu vàng kèm lý do.
+10. Bấm **Thẩm định / đổi trạng thái** → trạng thái **Đã duyệt**, ghi chú "Đủ hồ sơ pháp lý và năng lực" → **Cập nhật**.
+    - **Người xem cần thấy:** "Đã cập nhật trạng thái nhà cung cấp."; nhãn chuyển xanh **Đã duyệt**, kèm ghi chú.
+
+*Lời dẫn: "Quyền thẩm định nhà cung cấp mặc định thuộc Chuyên viên đấu thầu và Quản trị, đổi được trong ma trận phân quyền. Mọi lần đổi trạng thái đều ghi nhật ký và báo cho nhà cung cấp."*
+
+**Cửa sổ B — `phuongnam`** (F5)
+
+11. Chuông: "**Trạng thái hồ sơ nhà cung cấp: Đã duyệt** — Đủ hồ sơ pháp lý và năng lực". Trang **Tổng quan** hết hộp vàng; dòng đầu trang hiện **Đã duyệt**.
+12. **Gói thầu đang mời** → GT-2026-0002 → **Tham dự**.
+    - **Người xem cần thấy:** các ô đơn giá đã mở, có nút **Lưu nháp** và **Nộp HSDT**.
+    - ⚠️ **Không bấm Nộp HSDT**: nếu nộp, Cảnh 7 sẽ có 3 HSDT và các con số điểm, số ô chấm sẽ khác kịch bản.
+13. **Đăng xuất** `phuongnam`, **đăng nhập lại `ncc1`** để tiếp tục Cảnh 7–8.
+
+> *(Tùy chọn)* Nhà cung cấp vừa duyệt sẽ xuất hiện trong danh sách **Gửi thư mời** của các gói hạn chế / chào hàng cạnh tranh (ví dụ GT-2026-0004 → tab Phân quyền & mời thầu). Nhà cung cấp chưa duyệt sẽ không có trong danh sách này.
+
+---
+
 ### Cảnh 7. Đóng thầu, mở thầu, tổ chuyên gia 3 người chấm điểm — 5 phút
 **Cửa sổ A — đăng xuất, đăng nhập `admin`**
 
@@ -316,7 +377,7 @@ Kịch bản đi trọn một vòng đời: **lập HSMT → phê duyệt → c�
    - **Người xem cần thấy:** "Chưa thể trình duyệt chi: Cần gắn hóa đơn đã được kiểm tra hợp lệ."
 3. Tab **Hóa đơn** → dòng **0002156** → bấm ✓ (Hợp lệ).
 4. Tab **Thanh toán & giải ngân** → dòng 50%:
-   - Ô hóa đơn chọn **0002156 (1.732.500.000)**.
+   - Ô hóa đơn chọn **0002156 (1.575.000.000)**.
    - Ô nghiệm thu chọn **Biên bản giao nhận, lắp đặt thiết bị đợt 1**.
    - Bấm **Đề nghị**.
    - Trạng thái chuyển **Chờ duyệt chi**.
@@ -370,7 +431,7 @@ Kịch bản đi trọn một vòng đời: **lập HSMT → phê duyệt → c�
 1. Menu **Hợp đồng & giải ngân** → bấm **HD-2026-0001**.
    - **Người xem cần thấy** 4 ô KPI:
      - Giá trị hợp đồng **3.150.000.000**.
-     - Đã đặt hàng / đã xuất hóa đơn **3.150.000.000 / 1.732.500.000** (cộng thêm hóa đơn gửi ở Cảnh 11 nếu gửi cho HD này).
+     - Đã đặt hàng / đã xuất hóa đơn **3.150.000.000 / 1.575.000.000** (cộng thêm hóa đơn gửi ở Cảnh 11 nếu gửi cho HD này).
      - Đã giải ngân **2.520.000.000 (80%)**.
      - Còn lại theo hợp đồng **630.000.000**.
 2. Tab **Thanh toán & giải ngân**: kiểm tra trước khi quyết toán.
@@ -383,7 +444,7 @@ Kịch bản đi trọn một vòng đời: **lập HSMT → phê duyệt → c�
 |---|---|
 | Giá trị hợp đồng | 3.150.000.000 đ |
 | Giá trị đã đặt hàng | 3.150.000.000 đ |
-| Giá trị hóa đơn đã nhận (trừ bị từ chối) | 1.732.500.000 đ |
+| Giá trị hóa đơn đã nhận (trừ bị từ chối) | 1.575.000.000 đ |
 | Số lần nghiệm thu đạt | 1/1 |
 | Đã giải ngân | 2.520.000.000 đ |
 
@@ -403,13 +464,14 @@ Kịch bản đi trọn một vòng đời: **lập HSMT → phê duyệt → c�
    - Bảng đối chiếu thêm dòng xanh **Giá trị quyết toán** 3.150.000.000 đ (kèm thời điểm), dòng **Còn phải thanh toán** 630.000.000 đ và dòng **Ghi chú**.
    - Form quyết toán biến mất, thay bằng nút **Tạo đợt thanh toán quyết toán (630.000.000 đ)**.
    - Khối "Đánh giá nhà cung cấp" bên phải ghi: lãnh đạo hoặc cán bộ đấu thầu sẽ đánh giá (Kế toán không có quyền này).
-8. Tab **Thanh toán & giải ngân**: đợt 20% chuyển **Bị từ chối**, ghi chú có thêm "[Hủy do quyết toán]".
+8. Tab **Thanh toán & giải ngân**: đợt 20% chuyển **Đã hủy** (dòng bị gạch ngang, không còn nút Đề nghị), ghi chú có thêm "[Hủy do quyết toán]". Dòng Tổng không cộng đợt đã hủy.
 
 *Lời dẫn: "Đợt kế hoạch cũ tự hủy để tránh chi trùng; phần còn lại được thanh toán theo đúng giá trị quyết toán."*
 
-9. *(Tùy chọn)* Tab Quyết toán → **Tạo đợt thanh toán quyết toán (630.000.000 đ)**.
+9. *(Tùy chọn)* Tab Quyết toán → **Tạo đợt thanh toán quyết toán (630.000.000 đ)**. Nút này chỉ hiện với tài khoản có quyền quản lý thanh toán (`ketoan`, `admin`), **không** hiện với `giamdoc`.
    - Tab Thanh toán có đợt mới "Thanh toán quyết toán" 630.000.000 đ, hạn sau 15 ngày, trạng thái **Kế hoạch**.
-   - Muốn chi tiếp thì làm như Cảnh 10, cần hóa đơn hợp lệ ≥ 630.000.000 đ (không cần trong demo).
+   - Bấm lại nút lần nữa: nút đã biến mất (hệ thống không tạo trùng đợt quyết toán).
+   - Muốn chi tiếp thì làm như Cảnh 10, cần hóa đơn hợp lệ có tổng (tiền hàng + VAT) ≥ 630.000.000 đ, ví dụ tiền hàng 572.727.273 + VAT 57.272.727 (không cần trong demo).
 
 **Cửa sổ B — `ncc1`** (F5) *(tùy chọn)*
 
@@ -446,7 +508,7 @@ Kịch bản đi trọn một vòng đời: **lập HSMT → phê duyệt → c�
    - **Loại**: Hồ sơ thiết kế. **Thẻ**: `PCCC, điện`.
    - Chọn tệp `yeu-cau-pccc.docx` → **Tải lên**.
 2. Quay lại **Kho tài liệu**, tìm theo nội dung:
-   - Gõ **máy phát điện** → **Tìm kiếm**. **Người xem cần thấy:** tìm ra tệp Word theo **nội dung bên trong**.
+   - Gõ **một cụm từ có thật trong nội dung tệp Word** (ví dụ **máy phát điện** nếu đã chuẩn bị tệp theo mục A1; nên chọn cụm không nằm trong tiêu đề hay tên tệp) → **Tìm kiếm**. **Người xem cần thấy:** tìm ra tệp Word theo **nội dung bên trong**.
    - Gõ tiếp **Dell**: ra "Thuyết minh đề xuất kỹ thuật" của nhà thầu.
 3. Mở tài liệu `yeu-cau-pccc` → tab **Phiên bản**:
    - Chọn lại tệp (hoặc tệp khác), ghi chú "Bổ sung công suất" → **Phiên bản mới**. Có **v2**.
@@ -555,6 +617,7 @@ Tóm tắt 4 nhóm chức năng đề bài vừa trình diễn:
 | 4 | – | – | giamdoc |
 | 5 | dauthau | – | – |
 | 6 | dauthau (bước 8) | ncc1 | – |
+| 6B *(tùy chọn)* | dauthau | ncc1 → đăng ký `phuongnam` → ncc1 | – |
 | 7 | admin → dauthau → kythuat → chuyengia | – | – |
 | 8 | – | ncc1 | giamdoc |
 | 9 | chuyengia → dauthau → ketoan | ncc1 | giamdoc |
