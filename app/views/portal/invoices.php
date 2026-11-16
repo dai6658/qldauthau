@@ -20,6 +20,7 @@
             <div class="row g-2 mb-2">
                 <div class="col"><label class="form-label">Tiền hàng *</label><input class="form-control money" name="amount" required></div>
                 <div class="col"><label class="form-label">Thuế GTGT</label><input class="form-control money" name="vat_amount"></div>
+                <div class="col-12 form-text mt-0">Giá hợp đồng đã bao gồm thuế: tổng (tiền hàng + thuế GTGT) của các hóa đơn không được vượt giá trị hợp đồng, hoặc giá trị quyết toán nếu đã quyết toán.</div>
             </div>
             <label class="form-label">Tệp hóa đơn (PDF/XML) *</label><input class="form-control mb-2" type="file" name="file" accept=".pdf,.xml" required>
             <label class="form-label">Ghi chú</label><input class="form-control mb-3" name="note">
