@@ -215,7 +215,7 @@ INSERT INTO tender_criteria (id, tender_id, name, max_score, sort_order) VALUES
 (14,4, 'Năng lực cung cấp dịch vụ', 40, 2);
 
 INSERT INTO tender_members (tender_id, user_id, access) VALUES
-(1, 6, 'evaluate'), (2, 6, 'evaluate'), (2, 10, 'evaluate'), (3, 3, 'edit'), (4, 6, 'view');
+(1, 6, 'evaluate'), (1, 10, 'evaluate'), (2, 6, 'evaluate'), (2, 10, 'evaluate'), (3, 3, 'edit'), (4, 6, 'view');
 
 INSERT INTO tender_invitations (tender_id, supplier_id) VALUES (3, 3);
 
@@ -233,7 +233,9 @@ INSERT INTO bid_scores (bid_id, criterion_id, evaluator_id, score) VALUES
 (1,1,3,36),(1,2,3,18),(1,3,3,17),(1,4,3,18),
 (1,1,6,36),(1,2,6,18),(1,3,6,17),(1,4,6,17),
 (2,1,3,31),(2,2,3,15),(2,3,3,15),(2,4,3,15),
-(2,1,6,31),(2,2,6,15),(2,3,6,15),(2,4,6,15);
+(2,1,6,31),(2,2,6,15),(2,3,6,15),(2,4,6,15),
+(1,1,10,36.5),(1,2,10,18),(1,3,10,17),(1,4,10,17),
+(2,1,10,30),(2,2,10,16),(2,3,10,15),(2,4,10,15);
 
 INSERT INTO contracts (id, code, title, tender_id, bid_id, supplier_id, project_id, value, sign_date, start_date, end_date, payment_terms, status, created_by, created_at) VALUES
 (1, 'HD-2026-0001', 'Hợp đồng cung cấp máy chủ và hệ thống lưu trữ', 1, 1, 1, 1, 3150000000, '2026-03-20', '2026-03-25', '2026-10-30',
@@ -246,7 +248,7 @@ INSERT INTO purchase_orders (id, code, contract_id, order_date, delivery_date, a
 (1, 'PO-2026-0001', 1, '2026-03-26', '2026-06-10', 3150000000, 'Giao toàn bộ thiết bị theo phụ lục hợp đồng', 'delivered', '2026-03-27 09:00:00', 3);
 
 INSERT INTO invoices (id, contract_id, supplier_id, invoice_no, invoice_date, amount, vat_amount, status, note, submitted_by, submitted_at) VALUES
-(1, 1, 1, '0002156', '2026-06-16', 1575000000, 157500000, 'submitted', 'Hóa đơn điện tử đợt 2 (50%)', 7, '2026-06-16 14:00:00');
+(1, 1, 1, '0002156', '2026-06-16', 1431818182, 143181818, 'submitted', 'Hóa đơn điện tử đợt 2 (50%)', 7, '2026-06-16 14:00:00');
 
 INSERT INTO payments (id, contract_id, milestone, amount, due_date, status, invoice_id, acceptance_id, paid_amount, paid_at, note, created_by) VALUES
 (1, 1, 'Tạm ứng 30% sau ký hợp đồng', 945000000, '2026-03-30', 'paid', NULL, NULL, 945000000, '2026-03-28', 'Đã có bảo lãnh tạm ứng', 4),
