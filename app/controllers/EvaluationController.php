@@ -135,14 +135,34 @@ class EvaluationController extends Controller
      * Tiến độ chấm của tổ chuyên gia: số điểm thành phần cần cho 1 chuyên gia (tiêu chí × HSDT còn hiệu lực),
      * số chuyên gia đã chấm đủ và số tối thiểu theo cấu hình (min_evaluators).
      */
+    /**
+     * Điều kiện SQL chọn các HSDT thuộc diện chấm điểm (alias b).
+     * Đang đánh giá: HSDT đã nộp/hợp lệ. Sau trao thầu: HSDT đã được tính điểm (trúng thầu hoặc không trúng),
+     * không tính HSDT bị loại vì không hợp lệ (tech_score = NULL).
+     */
+    public static function scoredBidsSql(array $t): string
+    {
+        return $t['status'] === 'awarded'
+            ? "b.status IN ('awarded','rejected') AND b.tech_score IS NOT NULL"
+            : "b.status IN ('submitted','valid')";
+    }
+
+    public static function isScoredBid(array $t, array $b): bool
+    {
+        return $t['status'] === 'awarded'
+            ? in_array($b['status'], ['awarded', 'rejected'], true) && $b['tech_score'] !== null
+            : in_array($b['status'], ['submitted', 'valid'], true);
+    }
+
     public static function scoringProgress(array $t): array
     {
+        $scope = self::scoredBidsSql($t);
         $criteria = (int) val('SELECT COUNT(*) FROM tender_criteria WHERE tender_id = ?', [$t['id']]);
-        $activeBids = (int) val("SELECT COUNT(*) FROM bids WHERE tender_id = ? AND status IN ('submitted','valid')", [$t['id']]);
+        $activeBids = (int) val("SELECT COUNT(*) FROM bids b WHERE b.tender_id = ? AND $scope", [$t['id']]);
         $need = $criteria * $activeBids;
         $perEvaluator = pairs("SELECT s.evaluator_id, COUNT(*) FROM bid_scores s JOIN bids b ON b.id = s.bid_id
             JOIN tender_criteria c ON c.id = s.criterion_id AND c.tender_id = b.tender_id
-            WHERE b.tender_id = ? AND b.status IN ('submitted','valid') GROUP BY s.evaluator_id", [$t['id']]);
+            WHERE b.tender_id = ? AND $scope GROUP BY s.evaluator_id", [$t['id']]);
         $complete = $need > 0 ? count(array_filter($perEvaluator, fn($n) => (int) $n >= $need)) : 0;
         return [
             'need' => $need,
