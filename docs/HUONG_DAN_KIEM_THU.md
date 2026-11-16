@@ -263,7 +263,7 @@ Kết quả mong đợi ở DG-09 (QCS: KT 60%, giá 40%, KT tối thiểu 70):
 
 | Mã | Tài khoản | Thao tác | Kết quả mong đợi |
 |---|---|---|---|
-| HD-01 | dauthau | Hợp đồng mới → tab Hợp đồng → nhập giá trị **1.800.000.000** → Lưu | Báo "Giá trị hợp đồng không được vượt giá gói thầu." |
+| HD-01 | dauthau | Hợp đồng mới → tab Hợp đồng → nhập giá trị **1.800.000.000** → Lưu | Báo "Giá trị hợp đồng không được vượt giá trúng thầu (1.600.000.000 đ)." |
 | HD-02 | dauthau | **Trình duyệt** khi chưa có ngày ký | Báo "Cần nhập ngày ký và ngày kết thúc…" |
 | HD-03 | dauthau | Nhập ngày ký hôm nay, ngày kết thúc +90 ngày, giữ giá trị 1.600.000.000 → Lưu → **Trình duyệt** | "Đã trình phê duyệt hợp đồng"; trạng thái **Chờ phê duyệt** |
 | HD-04 | ketoan | Phê duyệt (bước 1 "Kế toán kiểm tra điều khoản thanh toán") | `giamdoc` nhận "Có hồ sơ cần phê duyệt" (bước 2) |
@@ -273,7 +273,7 @@ Kết quả mong đợi ở DG-09 (QCS: KT 60%, giá 40%, KT tối thiểu 70):
 | HD-08 | ncc1 (B) | **Đơn đặt hàng** → sửa ngày giao, ghi chú "Giao 2 đợt" → **Xác nhận** | Trạng thái "NCC đã xác nhận"; `dauthau` nhận thông báo |
 | HD-09 | dauthau | Đơn hàng → **Đã giao** | Trạng thái "Đã giao hàng" |
 | HD-10 | dauthau | Tab **Nghiệm thu**: "Nghiệm thu lắp đặt NGFW", kết quả Đạt, đính kèm `test.pdf` → Lập | Dòng mới có liên kết "Xem" biên bản (tài liệu loại Biên bản nghiệm thu); `ncc1` nhận "Kết quả nghiệm thu: Đạt" |
-| HD-11 | ketoan | Tab **Thanh toán** → thêm đợt "Tạm ứng 30%" 480.000.000, hạn +7 ngày; thêm đợt 2 với số tiền 1.200.000.000 | Đợt 1 thêm được. Đợt 2 báo "Tổng các đợt thanh toán (1.680.000.000 đ) vượt giá trị hợp đồng." |
+| HD-11 | ketoan | Tab **Thanh toán** → thêm đợt "Tạm ứng 30%" 480.000.000, hạn +7 ngày; thêm đợt 2 với số tiền 1.200.000.000 | Đợt 1 thêm được. Đợt 2 báo "Tổng các đợt thanh toán (1.680.000.000 đ, tính cả đợt bị từ chối) vượt giá trị hợp đồng…" |
 
 ### 10.2. Hợp đồng HD-2026-0001 (dữ liệu mẫu)
 
@@ -283,7 +283,7 @@ Kết quả mong đợi ở DG-09 (QCS: KT 60%, giá 40%, KT tối thiểu 70):
 | HD-13 | ketoan | Tab **Đơn hàng** → phát hành đơn 100.000.000 | Báo **vượt giá trị hợp đồng (đã đặt 3.150.000.000 đ)**: đơn hàng mẫu đã đặt đủ 100% |
 | HD-14 | ketoan | Tab **Thanh toán** → đợt "Thanh toán 50%…" → không chọn hóa đơn → **Đề nghị** | Báo "Chưa thể trình duyệt chi: Cần gắn hóa đơn đã được kiểm tra hợp lệ." (danh sách hóa đơn trống vì hóa đơn 0002156 chưa kiểm tra) |
 | HD-15 | ketoan | Tab **Hóa đơn** → 0002156 → bấm ✓ Hợp lệ | Trạng thái "Hợp lệ"; `ncc1` nhận thông báo |
-| HD-16 | ketoan | Tab Thanh toán → đợt 50%: chọn hóa đơn 0002156 (1.732.500.000) và nghiệm thu "Biên bản giao nhận…" → **Đề nghị** | "Đã trình duyệt chi"; trạng thái **Chờ duyệt chi**; `ketoan` nhận "Có hồ sơ cần phê duyệt" (bước 1 của quy trình thanh toán) |
+| HD-16 | ketoan | Tab Thanh toán → đợt 50%: chọn hóa đơn 0002156 (1.575.000.000) và nghiệm thu "Biên bản giao nhận…" → **Đề nghị** | "Đã trình duyệt chi"; trạng thái **Chờ duyệt chi**; `ketoan` nhận "Có hồ sơ cần phê duyệt" (bước 1 của quy trình thanh toán) |
 | HD-17 | ketoan, rồi giamdoc | Phê duyệt → trang Phê duyệt hiển thị tóm tắt "HD-2026-0001 · … · đã chi 945.000.000/3.150.000.000" | Sau bước của `giamdoc`: trạng thái **Đã duyệt chi**; người có quyền thanh toán nhận "Khoản thanh toán đã được duyệt chi" |
 | HD-18 | ketoan | Đợt 50% → nhập số tiền 2.000.000.000 → Giải ngân | Báo "Số tiền giải ngân không hợp lệ (tối đa 1.575.000.000 đ)" |
 | HD-19 | ketoan | Giữ 1.575.000.000, ngày hôm nay → **Giải ngân** | "Đã giải ngân … và hạch toán vào chi phí dự án". Đợt → **Đã giải ngân**; hóa đơn 0002156 → **Đã thanh toán**; KPI đã giải ngân 2.520.000.000 đ (80%) |
@@ -295,7 +295,7 @@ Kết quả mong đợi ở DG-09 (QCS: KT 60%, giá 40%, KT tối thiểu 70):
 | Mã | Tài khoản | Thao tác | Kết quả mong đợi |
 |---|---|---|---|
 | HD-22 | ncc1 (B) | **Hóa đơn điện tử** → HĐ HD-2026-0001, số `0002156`, điền đủ ngày, tiền hàng 100.000.000, tệp PDF → Gửi | Báo "Số hóa đơn đã được gửi trước đó." |
-| HD-23 | ncc1 | Số `0003001`, tiền hàng 2.000.000.000, kèm PDF | Báo "Tổng giá trị hóa đơn (trước thuế) vượt giá trị hợp đồng." |
+| HD-23 | ncc1 | Số `0003001`, tiền hàng 2.000.000.000, kèm PDF | Báo "Tổng giá trị hóa đơn gồm thuế (3.575.000.000 đ) vượt giá trị hợp đồng (3.150.000.000 đ). Còn được xuất tối đa 1.575.000.000 đ." |
 | HD-24 | ncc1 | Số `0003001`, tiền hàng 700.000.000, VAT 70.000.000, **không** kèm tệp | Trình duyệt yêu cầu chọn tệp. Nếu vượt qua được thì server báo "Vui lòng đính kèm tệp hóa đơn điện tử" |
 | HD-25 | ncc1 | Như trên, kèm `test.pdf` → Gửi | Hóa đơn "Chờ kiểm tra"; `ketoan` nhận "Hóa đơn mới cần kiểm tra" |
 | HD-26 | ketoan | HD-2026-0001 → tab Hóa đơn → 0003001 → bấm ✗ không ghi chú; sau đó ghi "Sai số tiền so với biên bản" → ✗ | Lần 1 báo "Nhập lý do từ chối hóa đơn"; lần 2 → **Bị trả lại**; `ncc1` thấy lý do trong danh sách hóa đơn |
@@ -305,14 +305,28 @@ Kết quả mong đợi ở DG-09 (QCS: KT 60%, giá 40%, KT tối thiểu 70):
 | Mã | Tài khoản | Thao tác | Kết quả mong đợi |
 |---|---|---|---|
 | HD-27 | ketoan | HD-2026-0001 → tab **Quyết toán** → giá trị 2.000.000.000 → Quyết toán | Báo "Giá trị quyết toán nhỏ hơn số đã thanh toán (2.520.000.000 đ)…" |
-| HD-28 | ketoan | Giá trị **3.150.000.000**, ghi chú "Quyết toán theo hợp đồng" → Quyết toán → xác nhận | Hợp đồng **Đã quyết toán**. Thông báo "…Còn phải thanh toán 630.000.000 đ". Đợt 20% chưa chi tự chuyển **Bị từ chối** với ghi chú "[Hủy do quyết toán]". `ncc1` nhận "Hợp đồng … đã được quyết toán" |
-| HD-29 | ketoan | Tab Quyết toán → **Tạo đợt thanh toán quyết toán (630.000.000 đ)** | Tab Thanh toán có đợt mới "Thanh toán quyết toán" 630.000.000 |
-| HD-30 | ncc1 (B) | Gửi hóa đơn số `0003002`, tiền hàng 600.000.000, VAT 60.000.000, kèm PDF | Gửi thành công (hợp đồng đã quyết toán vẫn nhận hóa đơn) |
+| HD-28 | ketoan | Giá trị **3.150.000.000**, ghi chú "Quyết toán theo hợp đồng" → Quyết toán → xác nhận | Hợp đồng **Đã quyết toán**. Thông báo "…Còn phải thanh toán 630.000.000 đ". Đợt 20% chưa chi tự chuyển **Đã hủy** (dòng gạch ngang, không có nút Đề nghị) với ghi chú "[Hủy do quyết toán]". `ncc1` nhận "Hợp đồng … đã được quyết toán" |
+| HD-29 | ketoan | Tab Quyết toán → **Tạo đợt thanh toán quyết toán (630.000.000 đ)** | Tab Thanh toán có đợt mới "Thanh toán quyết toán" 630.000.000; nút tạo đợt biến mất (không tạo trùng) |
+| HD-30 | ncc1 (B) | Gửi hóa đơn số `0003002`, tiền hàng 600.000.000, VAT 60.000.000, kèm PDF | Gửi thành công: tổng hóa đơn gồm thuế 1.575.000.000 + 660.000.000 = 2.235.000.000 vẫn ≤ giá trị quyết toán 3.150.000.000 |
 | HD-31 | ketoan → giamdoc → ketoan | Kiểm tra hóa đơn 0003002 hợp lệ → đề nghị thanh toán đợt quyết toán kèm hóa đơn → 2 bước duyệt → giải ngân 630.000.000 | Đã giải ngân 3.150.000.000 đ (100%); ô "Còn phải trả theo quyết toán" = 0 |
 | HD-32 | ketoan | Tab Quyết toán | Không có form đánh giá NCC (Kế toán không có quyền đánh giá) |
 | HD-33 | giamdoc | Tab Quyết toán → đánh giá 4 tiêu chí → Lưu | Hộp xanh "Đã đánh giá hiệu suất nhà cung cấp cho hợp đồng này"; trang NCC-0001 có đánh giá gắn mã HD-2026-0001 |
 | HD-34 | dauthau | Hợp đồng mới (GT-2026-0002) → **Chấm dứt** → lý do "Thử nghiệm" *(tùy chọn, làm cuối)* | Trạng thái **Chấm dứt**; `ncc1` nhận thông báo đỏ |
 | HD-35 | dauthau | Hợp đồng & giải ngân → **Xuất Excel** | Tệp `hop-dong.csv` đúng tiếng Việt |
+
+### 10.5. Kiểm soát chống chi vượt (bản vá 16/11/2026)
+
+HD-36 đến HD-38 chạy sau HD-31 trên HD-2026-0001. HD-39 đến HD-41 dùng hợp đồng mới từ GT-2026-0002 (giá trúng thầu 1.600.000.000) và phải chạy **trước** HD-34 (chấm dứt). HD-41 làm ngay sau HD-01, khi hợp đồng còn nháp.
+
+| Mã | Tài khoản | Thao tác | Kết quả mong đợi |
+|---|---|---|---|
+| HD-36 | ketoan | HD-2026-0001 → tab Thanh toán → dòng đợt 20% **Đã hủy** | Dòng gạch ngang, không có ô chọn hóa đơn, không có nút Đề nghị/Xóa. Dòng Tổng = 3.150.000.000 (không cộng đợt đã hủy). Tab Quyết toán không còn nút "Tạo đợt thanh toán quyết toán" |
+| HD-37 | ncc1 (B) | Gửi hóa đơn `0003003` cho HD-2026-0001, tiền hàng 900.000.000, VAT 90.000.000, kèm PDF | Báo "Tổng giá trị hóa đơn gồm thuế (3.225.000.000 đ) vượt giá trị quyết toán (3.150.000.000 đ). Còn được xuất tối đa 915.000.000 đ." |
+| HD-38 | ncc1 (B) | **Hợp đồng & thanh toán** → HD-2026-0001 | Không hiển thị đợt 20% đã hủy |
+| HD-39 | ncc1 → ketoan | `ncc1` gửi hóa đơn `0004001` cho hợp đồng mới: tiền hàng 436.363.637, VAT 43.636.363 (tổng 480.000.000) → `ketoan` ✓ → đề nghị đợt "Tạm ứng 30%" (480.000.000) kèm hóa đơn → ở bước 1 `ketoan` **từ chối** (lý do "Thử") → thêm đợt mới 1.200.000.000 | Đợt tạm ứng chuyển **Bị từ chối**. Đợt mới bị chặn: "Tổng các đợt thanh toán (1.680.000.000 đ, tính cả đợt bị từ chối) vượt giá trị hợp đồng" |
+| HD-40 | ketoan | Thêm đợt "Đợt 2" 400.000.000. Mở tab Thanh toán ở **hai cửa sổ**. Cửa sổ 1: đề nghị lại đợt tạm ứng với hóa đơn 0004001. Cửa sổ 2 (không tải lại): đề nghị "Đợt 2" với cùng hóa đơn 0004001 | Cửa sổ 1 thành công. Cửa sổ 2 báo "Hóa đơn 0004001 đã được dùng cho một đợt thanh toán khác." |
+| HD-41 | dauthau | Ngay sau HD-01: nhập giá trị **1.700.000.000** (cao hơn giá trúng thầu, thấp hơn giá gói thầu) → Lưu | Báo "Giá trị hợp đồng không được vượt giá trúng thầu (1.600.000.000 đ)." |
+| HD-42 | dauthau → giamdoc | Chạy HD-34 (chấm dứt) khi đợt tạm ứng còn **Chờ duyệt chi** từ HD-40 | Ngoài kết quả của HD-34: đợt tạm ứng và Đợt 2 chuyển **Đã hủy**; hồ sơ thanh toán biến mất khỏi hàng đợi Phê duyệt; đơn hàng chưa giao chuyển **Đã hủy**; không còn nút Đề nghị/Giải ngân |
 
 ---
 
@@ -503,7 +517,7 @@ Kết quả mong đợi ở DG-09 (QCS: KT 60%, giá 40%, KT tối thiểu 70):
 | 7. Phê duyệt (PD) | 10 | | | |
 | 8. Cổng NCC – HSDT (CNCC) | 15 | | | |
 | 9. Đánh giá & trao thầu (DG) | 18 | | | |
-| 10. Hợp đồng → quyết toán (HD) | 35 | | | |
+| 10. Hợp đồng → quyết toán (HD) | 42 | | | |
 | 11. Kế hoạch & tiến độ (KH) | 14 | | | |
 | 12. TMĐT & chi phí (TM) | 11 | | | |
 | 13. Kho tài liệu (TL) | 22 | | | |
@@ -513,7 +527,7 @@ Kết quả mong đợi ở DG-09 (QCS: KT 60%, giá 40%, KT tối thiểu 70):
 | 17. Dashboard & báo cáo (BC) | 8 | | | |
 | 18. Bảo mật chung (BM) | 9 | | | |
 | 19. Nhật ký kiểm toán (NK) | 7 | | | |
-| **Tổng** | **263** | | | |
+| **Tổng** | **270** | | | |
 
 ### Khi gặp lỗi
 
