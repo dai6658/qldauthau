@@ -1,5 +1,5 @@
 <?php
-$active = array_values(array_filter($bids, fn($b) => in_array($b['status'], ['submitted', 'valid'], true)));
+$active = array_values(array_filter($bids, fn($b) => EvaluationController::isScoredBid($t, $b)));
 $lowest = [];
 foreach ($items as $it) {
     $prices = [];
@@ -57,8 +57,8 @@ $maxTotal = array_sum(array_column($criteria, 'max_score'));
 
 <div class="tab-pane fade" id="tab-scoring">
     <div class="card">
-        <div class="card-header d-flex justify-content-between"><span>Phiếu chấm điểm của <?= e(auth()['full_name']) ?></span><span class="small text-muted">Mỗi chuyên gia chấm độc lập; kết quả lấy trung bình</span></div>
-        <?php if (!$active): ?><div class="card-body text-muted">Không có HSDT hợp lệ để chấm.</div><?php else: ?>
+        <div class="card-header d-flex justify-content-between"><span><?= $canEvaluate ? 'Phiếu chấm điểm của ' . e(auth()['full_name']) : 'Kết quả chấm điểm kỹ thuật (chỉ xem)' ?></span><span class="small text-muted">Mỗi chuyên gia chấm độc lập; kết quả lấy trung bình</span></div>
+        <?php if (!$active): ?><div class="card-body text-muted"><?= $t['status'] === 'evaluating' ? 'Không có HSDT hợp lệ để chấm.' : 'Không có HSDT nào được chấm điểm.' ?></div><?php else: ?>
         <form method="post" action="<?= url('evaluation/score', ['id' => $t['id']]) ?>">
             <?= csrf_field() ?>
             <div class="table-responsive"><table class="table table-bordered align-middle mb-0">
@@ -67,8 +67,12 @@ $maxTotal = array_sum(array_column($criteria, 'max_score'));
                     <tr><td><?= e($c['name']) ?><div class="small text-muted"><?= e($c['description']) ?></div></td><td class="text-center"><?= (int) $c['max_score'] ?></td>
                         <?php foreach ($active as $b): $ms = $myScores[$b['id']][$c['id']] ?? null; $av = $avg[$b['id']][$c['id']] ?? null; ?>
                             <td class="text-center">
-                                <input class="form-control form-control-sm score-input mx-auto" type="number" step="0.5" min="0" max="<?= (int) $c['max_score'] ?>" name="score[<?= (int) $b['id'] ?>][<?= (int) $c['id'] ?>]" value="<?= $ms ? e((float) $ms['score']) : '' ?>" <?= $canEvaluate ? '' : 'disabled' ?>>
+                                <?php if ($canEvaluate): ?>
+                                <input class="form-control form-control-sm score-input mx-auto" type="number" step="0.5" min="0" max="<?= (int) $c['max_score'] ?>" name="score[<?= (int) $b['id'] ?>][<?= (int) $c['id'] ?>]" value="<?= $ms ? e((float) $ms['score']) : '' ?>">
                                 <?php if ($av): ?><div class="small text-muted">TB: <?= num($av['a'], 1) ?> (<?= (int) $av['n'] ?> người)</div><?php endif; ?>
+                                <?php else: ?>
+                                <?= $av ? '<strong>' . num($av['a'], 1) . '</strong><div class="small text-muted">TB ' . (int) $av['n'] . ' người' . ($ms ? ' · bạn chấm ' . num($ms['score'], 1) : '') . '</div>' : '<span class="text-muted">—</span>' ?>
+                                <?php endif; ?>
                             </td>
                         <?php endforeach; ?></tr>
                 <?php endforeach; ?>
