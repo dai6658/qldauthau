@@ -448,8 +448,9 @@ Kịch bản đi trọn một vòng đời: **lập HSMT → phê duyệt → c�
 | Giá trị hóa đơn đã nhận (trừ bị từ chối) | 1.575.000.000 đ |
 | Số lần nghiệm thu đạt | 1/1 |
 | Đã giải ngân | 2.520.000.000 đ |
+| Đã chi nhưng chưa có hóa đơn (dòng vàng) | 945.000.000 đ |
 
-*Lời dẫn: "Trước khi quyết toán, hệ thống đối chiếu đủ 4 nguồn: hợp đồng, đơn hàng, hóa đơn và nghiệm thu với số tiền đã chi."*
+*Lời dẫn: "Trước khi quyết toán, hệ thống đối chiếu đủ 4 nguồn: hợp đồng, đơn hàng, hóa đơn và nghiệm thu với số tiền đã chi. Dòng vàng là khoản tạm ứng 30%: tạm ứng được chi dựa trên bảo lãnh tạm ứng, chưa có hóa đơn vì hàng chưa giao. Nhà thầu phải xuất hóa đơn cho phần này khi giao hàng, nghiệm thu."*
 
 5. *(Tùy chọn — chứng minh ràng buộc)*:
    1. Ô **Giá trị quyết toán** gõ `2000000000` → **Quyết toán hợp đồng** → OK. Kết quả: hộp đỏ "Giá trị quyết toán nhỏ hơn số đã thanh toán (2.520.000.000 đ) — cần thu hồi trước khi quyết toán."
