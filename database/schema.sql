@@ -544,7 +544,7 @@ CREATE TABLE payments (
   milestone VARCHAR(255) NOT NULL,
   amount DECIMAL(18,0) NOT NULL,
   due_date DATE NULL,
-  status ENUM('planned','pending_approval','approved','paid','rejected') NOT NULL DEFAULT 'planned',
+  status ENUM('planned','pending_approval','approved','paid','rejected','cancelled') NOT NULL DEFAULT 'planned',
   invoice_id INT NULL,
   acceptance_id INT NULL,
   paid_amount DECIMAL(18,0) NULL,
