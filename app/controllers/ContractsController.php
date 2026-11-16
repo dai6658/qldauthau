@@ -55,6 +55,19 @@ class ContractsController extends Controller
         redirect('contracts/view', $tab ? ['id' => $c['id'], 'tab' => $tab] : ['id' => $c['id']]);
     }
 
+    /** Trần giải ngân: giá trị quyết toán nếu đã quyết toán, ngược lại là giá trị hợp đồng */
+    private static function payCap(array $c): float
+    {
+        return $c['status'] === 'completed' && $c['settled_amount'] !== null ? (float) $c['settled_amount'] : (float) $c['value'];
+    }
+
+    /** Tổng đã giải ngân + đang chờ duyệt chi / đã duyệt chi chưa giải ngân (không tính đợt $exceptId) */
+    private static function committedPayments(int $contractId, int $exceptId = 0): float
+    {
+        return (float) val("SELECT COALESCE(SUM(CASE WHEN status = 'paid' THEN paid_amount ELSE amount END),0) FROM payments
+            WHERE contract_id = ? AND id <> ? AND status IN ('pending_approval','approved','paid')", [$contractId, $exceptId]);
+    }
+
     public function view(): void
     {
         require_perm('contracts.view');
@@ -69,7 +82,8 @@ class ContractsController extends Controller
             LEFT JOIN users r ON r.id = i.reviewed_by WHERE i.contract_id = ? ORDER BY i.id DESC', [$id]);
         $documents = DocumentService::forEntity('contract', $id);
         $stats = [
-            'planned' => array_sum(array_column($payments, 'amount')),
+            'planned' => array_sum(array_map(fn($p) => $p['status'] !== 'cancelled' ? (float) $p['amount'] : 0, $payments)),
+            'open' => array_sum(array_map(fn($p) => in_array($p['status'], ['planned', 'pending_approval', 'approved'], true) ? (float) $p['amount'] : 0, $payments)),
             'paid' => array_sum(array_map(fn($p) => $p['status'] === 'paid' ? (float) $p['paid_amount'] : 0, $payments)),
             'invoiced' => array_sum(array_map(fn($i) => $i['status'] !== 'rejected' ? (float) $i['amount'] + (float) $i['vat_amount'] : 0, $invoices)),
             'ordered' => array_sum(array_map(fn($o) => $o['status'] !== 'cancelled' ? (float) $o['amount'] : 0, $orders)),
@@ -96,9 +110,17 @@ class ContractsController extends Controller
         $data = ['title' => input('title') ?: $c['title'], 'value' => input_money('value') ?: $c['value'],
                  'sign_date' => input_date('sign_date'), 'start_date' => input_date('start_date'), 'end_date' => input_date('end_date'),
                  'payment_terms' => input('payment_terms'), 'updated_at' => date('Y-m-d H:i:s')];
-        if ($c['bid_id'] && $data['value'] > (float) val('SELECT budget FROM tenders WHERE id = ?', [$c['tender_id']])) {
-            flash('danger', 'Giá trị hợp đồng không được vượt giá gói thầu.');
-            $this->back($c);
+        if ($c['bid_id']) {
+            $bidPrice = (float) val('SELECT total_price FROM bids WHERE id = ?', [$c['bid_id']]);
+            $budget = (float) val('SELECT budget FROM tenders WHERE id = ?', [$c['tender_id']]);
+            if ($data['value'] > $bidPrice) {
+                flash('danger', 'Giá trị hợp đồng không được vượt giá trúng thầu (' . money($bidPrice) . ').');
+                $this->back($c);
+            }
+            if ($data['value'] > $budget) {
+                flash('danger', 'Giá trị hợp đồng không được vượt giá gói thầu.');
+                $this->back($c);
+            }
         }
         update_row('contracts', $data, 'id = ?', [$c['id']]);
         $changes = [];
@@ -218,13 +240,13 @@ class ContractsController extends Controller
         require_perm('payments.manage');
         $c = $this->find('contract_id');
         $amount = input_money('amount');
-        $planned = (float) val("SELECT COALESCE(SUM(amount),0) FROM payments WHERE contract_id = ? AND status <> 'rejected'", [$c['id']]);
+        $planned = (float) val("SELECT COALESCE(SUM(amount),0) FROM payments WHERE contract_id = ? AND status <> 'cancelled'", [$c['id']]);
         if (!in_array($c['status'], ['active', 'pending_approval', 'draft'], true)) {
             flash('danger', 'Hợp đồng đã kết thúc.');
         } elseif (!input('milestone') || $amount <= 0) {
             flash('danger', 'Nhập nội dung đợt thanh toán và số tiền.');
         } elseif ($planned + $amount > (float) $c['value']) {
-            flash('danger', 'Tổng các đợt thanh toán (' . money($planned + $amount) . ') vượt giá trị hợp đồng.');
+            flash('danger', 'Tổng các đợt thanh toán (' . money($planned + $amount) . ', tính cả đợt bị từ chối) vượt giá trị hợp đồng. Xóa đợt bị từ chối nếu không dùng nữa.');
         } else {
             insert('payments', ['contract_id' => $c['id'], 'milestone' => input('milestone'), 'amount' => $amount,
                 'due_date' => input_date('due_date'), 'note' => input('note'), 'status' => 'planned', 'created_by' => user_id(), 'created_at' => date('Y-m-d H:i:s')]);
@@ -250,32 +272,61 @@ class ContractsController extends Controller
     {
         require_perm('payments.manage');
         $p = $this->requireId('payments', 'payment_id', 'đợt thanh toán');
-        $c = row('SELECT c.*, s.name AS supplier_name FROM contracts c JOIN suppliers s ON s.id = c.supplier_id WHERE c.id = ?', [$p['contract_id']]);
         $invoiceId = input_int('invoice_id') ?: null;
         $acceptId = input_int('acceptance_id') ?: null;
-        $invoice = $invoiceId ? row('SELECT * FROM invoices WHERE id = ? AND contract_id = ?', [$invoiceId, $c['id']]) : null;
-        $errors = [];
-        if (!in_array($c['status'], ['active', 'completed'], true)) {
-            $errors[] = 'Hợp đồng chưa có hiệu lực hoặc đã chấm dứt.';
-        }
-        if (!in_array($p['status'], ['planned', 'rejected'], true)) {
-            $errors[] = 'Đợt thanh toán đã được trình.';
-        }
-        if (setting('require_invoice_for_payment', '1') === '1' && (!$invoice || $invoice['status'] !== 'verified')) {
-            $errors[] = 'Cần gắn hóa đơn đã được kiểm tra hợp lệ.';
-        }
-        if ($invoice && (float) $invoice['amount'] + (float) $invoice['vat_amount'] < (float) $p['amount']) {
-            $errors[] = 'Giá trị hóa đơn nhỏ hơn số tiền đề nghị thanh toán.';
-        }
-        if ($acceptId && val('SELECT result FROM acceptances WHERE id = ?', [$acceptId]) === 'failed') {
-            $errors[] = 'Biên bản nghiệm thu không đạt.';
-        }
-        if ($errors) {
-            flash('danger', 'Chưa thể trình duyệt chi: ' . implode(' ', $errors));
-        } else {
-            update_row('payments', ['status' => 'pending_approval', 'invoice_id' => $invoiceId, 'acceptance_id' => $acceptId], 'id = ?', [$p['id']]);
-            $needs = Workflow::start('payment', (int) $p['id'], 'Thanh toán ' . $c['code'] . ' - ' . $p['milestone'] . ' - ' . money($p['amount']) . ' cho ' . $c['supplier_name']);
-            flash('success', $needs ? 'Đã trình duyệt chi.' : 'Khoản thanh toán được duyệt tự động.');
+        $ok = $this->attempt(function () use ($p, $invoiceId, $acceptId) {
+            return transaction(function () use ($p, $invoiceId, $acceptId) {
+                // Khóa hợp đồng để hai đề nghị đồng thời không cùng vượt trần
+                $c = row('SELECT c.*, s.name AS supplier_name FROM contracts c JOIN suppliers s ON s.id = c.supplier_id WHERE c.id = ? FOR UPDATE', [$p['contract_id']]);
+                $p = row('SELECT * FROM payments WHERE id = ? FOR UPDATE', [$p['id']]);
+                $invoice = $invoiceId ? row('SELECT * FROM invoices WHERE id = ? AND contract_id = ?', [$invoiceId, $c['id']]) : null;
+                $errors = [];
+                if (!in_array($c['status'], ['active', 'completed'], true)) {
+                    $errors[] = 'Hợp đồng chưa có hiệu lực hoặc đã chấm dứt.';
+                }
+                if ($p['status'] === 'cancelled') {
+                    $errors[] = 'Đợt thanh toán đã bị hủy, không thể đề nghị lại.';
+                } elseif (!in_array($p['status'], ['planned', 'rejected'], true)) {
+                    $errors[] = 'Đợt thanh toán đã được trình.';
+                }
+                if ($invoiceId && !$invoice) {
+                    $errors[] = 'Hóa đơn không thuộc hợp đồng này.';
+                }
+                if ($invoice && $invoice['status'] !== 'verified') {
+                    $errors[] = 'Hóa đơn chưa được kiểm tra hợp lệ hoặc đã được thanh toán.';
+                } elseif (!$invoice && setting('require_invoice_for_payment', '1') === '1') {
+                    $errors[] = 'Cần gắn hóa đơn đã được kiểm tra hợp lệ.';
+                }
+                if ($invoice && val("SELECT 1 FROM payments WHERE invoice_id = ? AND id <> ? AND status IN ('pending_approval','approved','paid')", [$invoice['id'], $p['id']])) {
+                    $errors[] = 'Hóa đơn ' . $invoice['invoice_no'] . ' đã được dùng cho một đợt thanh toán khác.';
+                }
+                if ($invoice && (float) $invoice['amount'] + (float) $invoice['vat_amount'] < (float) $p['amount']) {
+                    $errors[] = 'Giá trị hóa đơn nhỏ hơn số tiền đề nghị thanh toán.';
+                }
+                if ($acceptId) {
+                    $acc = row('SELECT result FROM acceptances WHERE id = ? AND contract_id = ?', [$acceptId, $c['id']]);
+                    if (!$acc) {
+                        $errors[] = 'Biên bản nghiệm thu không thuộc hợp đồng này.';
+                    } elseif ($acc['result'] === 'failed') {
+                        $errors[] = 'Biên bản nghiệm thu không đạt.';
+                    }
+                }
+                $cap = self::payCap($c);
+                $committed = self::committedPayments((int) $c['id'], (int) $p['id']);
+                if ($committed + (float) $p['amount'] > $cap) {
+                    $errors[] = 'Tổng đã chi và đang chờ chi (' . money($committed) . ') cộng đợt này (' . money($p['amount']) . ') vượt '
+                        . ($c['status'] === 'completed' ? 'giá trị quyết toán' : 'giá trị hợp đồng') . ' (' . money($cap) . ').';
+                }
+                if ($errors) {
+                    $this->fail('Chưa thể trình duyệt chi: ' . implode(' ', $errors));
+                }
+                update_row('payments', ['status' => 'pending_approval', 'invoice_id' => $invoice['id'] ?? null, 'acceptance_id' => $acceptId], 'id = ?', [$p['id']]);
+                $needs = Workflow::start('payment', (int) $p['id'], 'Thanh toán ' . $c['code'] . ' - ' . $p['milestone'] . ' - ' . money($p['amount']) . ' cho ' . $c['supplier_name']);
+                return $needs ? 'Đã trình duyệt chi.' : 'Khoản thanh toán được duyệt tự động.';
+            });
+        });
+        if (is_string($ok)) {
+            flash('success', $ok);
         }
         redirect('contracts/view', ['id' => $p['contract_id'], 'tab' => 'payments']);
     }
@@ -285,14 +336,26 @@ class ContractsController extends Controller
     {
         require_perm('payments.manage');
         $p = $this->requireId('payments', 'payment_id', 'đợt thanh toán');
-        $c = row('SELECT c.*, t.investment_item_id FROM contracts c LEFT JOIN tenders t ON t.id = c.tender_id WHERE c.id = ?', [$p['contract_id']]);
         $amount = input_money('paid_amount') ?: (float) $p['amount'];
-        if ($p['status'] !== 'approved') {
-            flash('danger', 'Khoản thanh toán chưa được duyệt chi.');
-        } elseif ($amount <= 0 || $amount > (float) $p['amount']) {
-            flash('danger', 'Số tiền giải ngân không hợp lệ (tối đa ' . money($p['amount']) . ').');
-        } else {
-            transaction(function () use ($p, $c, $amount) {
+        $ok = $this->attempt(function () use ($p, $amount) {
+            return transaction(function () use ($p, $amount) {
+                $c = row('SELECT c.*, t.investment_item_id FROM contracts c LEFT JOIN tenders t ON t.id = c.tender_id WHERE c.id = ? FOR UPDATE', [$p['contract_id']]);
+                $p = row('SELECT * FROM payments WHERE id = ? FOR UPDATE', [$p['id']]);
+                if ($p['status'] !== 'approved') {
+                    $this->fail($p['status'] === 'paid' ? 'Đợt thanh toán này đã được giải ngân.' : 'Khoản thanh toán chưa được duyệt chi.');
+                }
+                if (!in_array($c['status'], ['active', 'completed'], true)) {
+                    $this->fail('Hợp đồng đã chấm dứt hoặc chưa có hiệu lực, không thể giải ngân.');
+                }
+                if ($amount <= 0 || $amount > (float) $p['amount']) {
+                    $this->fail('Số tiền giải ngân không hợp lệ (tối đa ' . money($p['amount']) . ').');
+                }
+                $cap = self::payCap($c);
+                $paidOthers = (float) val("SELECT COALESCE(SUM(paid_amount),0) FROM payments WHERE contract_id = ? AND id <> ? AND status = 'paid'", [$c['id'], $p['id']]);
+                if ($paidOthers + $amount > $cap) {
+                    $this->fail('Giải ngân ' . money($amount) . ' sẽ làm tổng đã chi (' . money($paidOthers + $amount) . ') vượt '
+                        . ($c['status'] === 'completed' ? 'giá trị quyết toán' : 'giá trị hợp đồng') . ' (' . money($cap) . ').');
+                }
                 $paidAt = input_date('paid_at') ?: date('Y-m-d');
                 update_row('payments', ['status' => 'paid', 'paid_amount' => $amount, 'paid_at' => $paidAt, 'note' => input('note') ?: $p['note']], 'id = ?', [$p['id']]);
                 insert('expenses', [
@@ -304,8 +367,11 @@ class ContractsController extends Controller
                     update_row('invoices', ['status' => 'paid'], 'id = ?', [$p['invoice_id']]);
                 }
                 Audit::log('disburse', 'payment', $p['id'], 'Giải ngân ' . money($amount) . ' - HĐ ' . $c['code'] . ' - ' . $p['milestone']);
+                return $c;
             });
-            Notifier::send(Notifier::supplierUsers([(int) $c['supplier_id']]), 'Đã thanh toán ' . money($amount), 'Hợp đồng ' . $c['code'] . ' - ' . $p['milestone'], url('portal/contracts'), 'success');
+        });
+        if (is_array($ok)) {
+            Notifier::send(Notifier::supplierUsers([(int) $ok['supplier_id']]), 'Đã thanh toán ' . money($amount), 'Hợp đồng ' . $ok['code'] . ' - ' . $p['milestone'], url('portal/contracts'), 'success');
             flash('success', 'Đã giải ngân ' . money($amount) . ' và hạch toán vào chi phí dự án.');
         }
         redirect('contracts/view', ['id' => $p['contract_id'], 'tab' => 'payments']);
@@ -337,7 +403,7 @@ class ContractsController extends Controller
             }
             update_row('contracts', ['status' => 'completed', 'settled_amount' => $settled, 'settled_at' => date('Y-m-d H:i:s'),
                 'settlement_note' => input('settlement_note'), 'updated_at' => date('Y-m-d H:i:s')], 'id = ?', [$c['id']]);
-            q("UPDATE payments SET status = 'rejected', note = CONCAT(COALESCE(note,''), ' [Hủy do quyết toán]') WHERE contract_id = ? AND status = 'planned'", [$c['id']]);
+            q("UPDATE payments SET status = 'cancelled', note = CONCAT(COALESCE(note,''), ' [Hủy do quyết toán]') WHERE contract_id = ? AND status IN ('planned','rejected')", [$c['id']]);
             Audit::log('settle', 'contract', $c['id'], 'Quyết toán ' . money($settled) . ', đã thanh toán ' . money($paid) . ', còn phải trả ' . money($settled - $paid));
         }, 'Đã quyết toán hợp đồng.' . ($settled - $paid > 0 ? ' Còn phải thanh toán ' . money($settled - $paid) . ' — hãy thêm đợt thanh toán quyết toán.' : ''));
         if ($ok) {
@@ -355,13 +421,15 @@ class ContractsController extends Controller
         require_perm('payments.manage');
         $c = $this->find();
         $paid = (float) val("SELECT COALESCE(SUM(paid_amount),0) FROM payments WHERE contract_id = ? AND status = 'paid'", [$c['id']]);
-        $open = (float) val("SELECT COALESCE(SUM(amount),0) FROM payments WHERE contract_id = ? AND status IN ('pending_approval','approved')", [$c['id']]);
+        $open = (float) val("SELECT COALESCE(SUM(amount),0) FROM payments WHERE contract_id = ? AND status IN ('planned','rejected','pending_approval','approved')", [$c['id']]);
         $remain = (float) $c['settled_amount'] - $paid - $open;
         if ($c['status'] === 'completed' && $remain > 0) {
             insert('payments', ['contract_id' => $c['id'], 'milestone' => 'Thanh toán quyết toán', 'amount' => $remain,
                 'due_date' => date('Y-m-d', strtotime('+15 days')), 'status' => 'planned', 'created_by' => user_id(), 'created_at' => date('Y-m-d H:i:s')]);
             Audit::log('create', 'contract', $c['id'], 'Tạo đợt thanh toán quyết toán ' . money($remain));
             flash('success', 'Đã tạo đợt thanh toán quyết toán ' . money($remain));
+        } else {
+            flash('warning', 'Không còn giá trị phải thanh toán theo quyết toán hoặc đã có đợt thanh toán quyết toán đang chờ xử lý.');
         }
         $this->back($c, 'payments');
     }
@@ -375,6 +443,12 @@ class ContractsController extends Controller
         } else {
             update_row('contracts', ['status' => 'terminated', 'settlement_note' => 'Chấm dứt: ' . input('reason'), 'updated_at' => date('Y-m-d H:i:s')], 'id = ?', [$c['id']]);
             q("UPDATE approvals SET status = 'cancelled' WHERE entity_type = 'contract' AND entity_id = ? AND status IN ('waiting','pending')", [$c['id']]);
+            // Dừng mọi khoản chưa chi: hủy luồng duyệt chi đang chạy và các đợt chưa giải ngân
+            q("UPDATE approvals SET status = 'cancelled' WHERE entity_type = 'payment' AND status IN ('waiting','pending')
+               AND entity_id IN (SELECT id FROM payments WHERE contract_id = ?)", [$c['id']]);
+            q("UPDATE payments SET status = 'cancelled', note = CONCAT(COALESCE(note,''), ' [Hủy do chấm dứt hợp đồng]')
+               WHERE contract_id = ? AND status IN ('planned','rejected','pending_approval','approved')", [$c['id']]);
+            q("UPDATE purchase_orders SET status = 'cancelled' WHERE contract_id = ? AND status IN ('sent','confirmed')", [$c['id']]);
             Audit::log('status', 'contract', $c['id'], 'Chấm dứt hợp đồng: ' . input('reason'));
             Notifier::send(Notifier::supplierUsers([(int) $c['supplier_id']]), 'Hợp đồng ' . $c['code'] . ' bị chấm dứt', (string) input('reason'), url('portal/contracts'), 'danger');
             flash('success', 'Đã chấm dứt hợp đồng.');
