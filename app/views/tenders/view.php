@@ -166,8 +166,9 @@ $isDraft = $t['status'] === 'draft';
         <div class="card-header">Thành viên được phân quyền trên hồ sơ này</div>
         <table class="table table-sm mb-0">
             <?php foreach ($members as $m): ?>
-                <tr><td><?= e($m['full_name']) ?><div class="small text-muted"><?= e($m['dept']) ?></div></td><td><?= badge('member_access', $m['access']) ?></td>
-                    <td><?php if ($canEdit): ?><form method="post" action="<?= url('tenders/removeMember', ['id' => $t['id']]) ?>"><?= csrf_field() ?><input type="hidden" name="user_id" value="<?= (int) $m['user_id'] ?>"><button class="btn btn-sm btn-link text-danger p-0">Gỡ</button></form><?php endif; ?></td></tr>
+                <?php $isCreator = (int) $m['user_id'] === (int) $t['created_by']; ?>
+                <tr><td><?= e($m['full_name']) ?><?= $isCreator ? ' <span class="badge bg-light text-dark border">Người lập HSMT</span>' : '' ?><div class="small text-muted"><?= e($m['dept']) ?></div></td><td><?= badge('member_access', $m['access']) ?><?= $isCreator ? '<div class="small text-muted">Toàn quyền, được chấm điểm</div>' : '' ?></td>
+                    <td><?php if ($canEdit && !$isCreator): ?><form method="post" action="<?= url('tenders/removeMember', ['id' => $t['id']]) ?>"><?= csrf_field() ?><input type="hidden" name="user_id" value="<?= (int) $m['user_id'] ?>"><button class="btn btn-sm btn-link text-danger p-0">Gỡ</button></form><?php endif; ?></td></tr>
             <?php endforeach; ?>
         </table>
         <?php if ($canEdit): ?>

@@ -22,3 +22,8 @@ INSERT IGNORE INTO tender_members (tender_id, user_id, access) VALUES (1, 10, 'e
 INSERT IGNORE INTO bid_scores (bid_id, criterion_id, evaluator_id, score) VALUES
 (1,1,10,36.5),(1,2,10,18),(1,3,10,17),(1,4,10,17),
 (2,1,10,30),(2,2,10,16),(2,3,10,15),(2,4,10,15);
+
+-- 5) Người lập HSMT luôn là thành viên "Biên soạn" của hồ sơ mình lập
+--    (dữ liệu mẫu cũ thiếu bản ghi này nên tab Phân quyền chỉ hiện 2 người). Không ghi đè quyền đã có.
+INSERT IGNORE INTO tender_members (tender_id, user_id, access)
+SELECT id, created_by, 'edit' FROM tenders WHERE created_by IS NOT NULL;

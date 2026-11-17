@@ -187,7 +187,14 @@ class TendersController extends Controller
         $id = (int) $t['id'];
         $items = rows('SELECT * FROM tender_items WHERE tender_id = ? ORDER BY id', [$id]);
         $criteria = rows('SELECT * FROM tender_criteria WHERE tender_id = ? ORDER BY sort_order, id', [$id]);
-        $members = rows('SELECT m.*, u.full_name, u.username, d.name AS dept FROM tender_members m JOIN users u ON u.id = m.user_id LEFT JOIN departments d ON d.id = u.department_id WHERE m.tender_id = ?', [$id]);
+        $members = rows('SELECT m.*, u.full_name, u.username, d.name AS dept FROM tender_members m JOIN users u ON u.id = m.user_id LEFT JOIN departments d ON d.id = u.department_id WHERE m.tender_id = ? ORDER BY m.user_id = ? DESC, u.full_name', [$id, (int) $t['created_by']]);
+        // Người lập HSMT luôn có toàn quyền trên hồ sơ (Access::tender) nên luôn được liệt kê, kể cả khi chưa có bản ghi thành viên
+        if ($t['created_by'] && !in_array((int) $t['created_by'], array_map('intval', array_column($members, 'user_id')), true)) {
+            $creator = row('SELECT u.id AS user_id, u.full_name, u.username, d.name AS dept FROM users u LEFT JOIN departments d ON d.id = u.department_id WHERE u.id = ?', [$t['created_by']]);
+            if ($creator) {
+                array_unshift($members, $creator + ['tender_id' => $id, 'access' => 'edit']);
+            }
+        }
         $invites = rows('SELECT i.*, s.name, s.code FROM tender_invitations i JOIN suppliers s ON s.id = i.supplier_id WHERE i.tender_id = ?', [$id]);
         $bids = rows("SELECT b.*, s.name AS supplier_name, s.code AS supplier_code FROM bids b JOIN suppliers s ON s.id = b.supplier_id
                       WHERE b.tender_id = ? AND b.status <> 'draft' ORDER BY COALESCE(b.rank_no, 999), b.submitted_at", [$id]);

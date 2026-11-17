@@ -95,7 +95,7 @@ Kịch bản đi trọn một vòng đời: **lập HSMT → phê duyệt → c�
      - công thức "Điểm tổng hợp = 60% × điểm kỹ thuật + 40% × điểm giá".
 6. Lướt tab **Hạng mục** (tổng dự toán 5,9 tỷ) và tab **Tiêu chí** (tổng 100 điểm).
 7. Tab **Phân quyền & mời thầu**:
-   - Khối trái: đã có **Trần Thị Lan** (quyền Biên soạn). Chọn **Đặng Thu Trang (Chuyên viên đấu thầu)**, quyền **Tổ chuyên gia (chấm điểm)** → **Thêm**. *(Hoàng Minh Tuấn là người lập GT-2026-0003 nên đã có quyền chấm, không cần thêm.)*
+   - Khối trái: đã có **Hoàng Minh Tuấn** (nhãn *Người lập HSMT*) và **Trần Thị Lan**, đều quyền Biên soạn. Chọn **Đặng Thu Trang (Chuyên viên đấu thầu)**, quyền **Tổ chuyên gia (chấm điểm)** → **Thêm**.
    - Khối phải: đã mời "Hòa Bình Xanh", vì đây là hình thức đấu thầu hạn chế.
 8. Tab **Tài liệu**, dòng tải lên phía dưới:
    - Loại **Bản vẽ kỹ thuật**, mức mật **Công khai**.

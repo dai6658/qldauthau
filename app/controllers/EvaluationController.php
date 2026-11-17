@@ -47,10 +47,10 @@ class EvaluationController extends Controller
         $progress = self::scoringProgress($t);
         $panel = rows("SELECT u.id, u.full_name, d.name AS dept FROM tender_members m JOIN users u ON u.id = m.user_id
             LEFT JOIN departments d ON d.id = u.department_id WHERE m.tender_id = ? AND m.access IN ('evaluate','edit') ORDER BY u.full_name", [$t['id']]);
-        // Người lập HSMT cũng có quyền chấm điểm (Access::tender 'evaluate') nên được liệt kê trong tổ chuyên gia
-        if ($t['created_by'] && !in_array((int) $t['created_by'], array_map('intval', array_column($panel, 'id')), true)) {
-            $creator = row("SELECT u.id, u.full_name, d.name AS dept FROM users u LEFT JOIN departments d ON d.id = u.department_id
-                JOIN roles r ON r.id = u.role_id WHERE u.id = ? AND u.is_active = 1", [$t['created_by']]);
+        // Người lập HSMT cũng có quyền chấm điểm (Access::tender 'evaluate') nên luôn được liệt kê trong tổ chuyên gia
+        $panel = array_values(array_filter($panel, fn($m) => (int) $m['id'] !== (int) $t['created_by']));
+        if ($t['created_by']) {
+            $creator = row('SELECT u.id, u.full_name, d.name AS dept FROM users u LEFT JOIN departments d ON d.id = u.department_id WHERE u.id = ? AND u.is_active = 1', [$t['created_by']]);
             if ($creator) {
                 $creator['full_name'] .= ' (người lập HSMT)';
                 array_unshift($panel, $creator);

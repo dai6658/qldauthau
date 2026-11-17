@@ -215,7 +215,9 @@ INSERT INTO tender_criteria (id, tender_id, name, max_score, sort_order) VALUES
 (14,4, 'Năng lực cung cấp dịch vụ', 40, 2);
 
 INSERT INTO tender_members (tender_id, user_id, access) VALUES
-(1, 6, 'evaluate'), (1, 10, 'evaluate'), (2, 6, 'evaluate'), (2, 10, 'evaluate'), (3, 3, 'edit'), (4, 6, 'view');
+(1, 3, 'edit'), (1, 6, 'evaluate'), (1, 10, 'evaluate'),
+(2, 3, 'edit'), (2, 6, 'evaluate'), (2, 10, 'evaluate'),
+(3, 6, 'edit'), (3, 3, 'edit'), (4, 3, 'edit'), (4, 6, 'view');
 
 INSERT INTO tender_invitations (tender_id, supplier_id) VALUES (3, 3);
 
